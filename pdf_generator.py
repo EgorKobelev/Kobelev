@@ -316,10 +316,11 @@ class DataSet:
         return dictionary
 
 
-file_name = input("Введите название файла: ")
-profession = input("Введите название профессии: ")
-dataset = DataSet(file_name, profession)
-report(dataset.vacancies_count_by_years, dataset.vacancies_count_by_years_for_profession, dataset.salary_by_years,
-       dataset.salary_by_years_for_profession,
-       dataset.vacancies_count_by_cities, dataset.vacancies_share_by_cities, dataset.salary_by_cities,
-       dataset.profession).generate_pdf()
+def get_pdf_statistic(file_name, profession):
+    file_name = input("Введите название файла: ")
+    profession = input("Введите название профессии: ")
+    dataset = DataSet(file_name, profession)
+    report(dataset.vacancies_count_by_years, dataset.vacancies_count_by_years_for_profession, dataset.salary_by_years,
+           dataset.salary_by_years_for_profession,
+           dataset.vacancies_count_by_cities, dataset.vacancies_share_by_cities, dataset.salary_by_cities,
+           dataset.profession).generate_pdf()
