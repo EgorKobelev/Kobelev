@@ -8,7 +8,6 @@ import numpy as np
 from jinja2 import Environment, FileSystemLoader
 import pdfkit
 
-
 class Report:
     """Класс для визуализации статистики
         Attributes:
@@ -21,7 +20,7 @@ class Report:
            salary_by_years_for_profession (dict): Словарь - год : уровень зарплат определённой профессии
            salary_by_cities (dict): Словарь - город : уровень зарплат
            side (Side): стиль стороны ячейки excel
-           border (Border): стиль обводки ячейки excel
+           thin_border (Border): стиль обводки ячейки excel
     """
     def __init__(self, vacancies_count_by_years, vacancies_count_by_years_for_profession, salary_by_years,
                  salary_by_years_for_profession, vacancies_count_by_cities, vacancies_share_by_cities, salary_by_cities,
@@ -264,6 +263,16 @@ class Vacancy:
         """Инициализируект объект Vacancy
                Args:
                    dictionary (dict): словарь
+        >>> Vacancy({"name": "Аналитик", "salary_from": 10000, "salary_to": 100000, "salary_currency": "RUR", "area_name": "Москва",  "published_at": "2022-07-05T18:19:30+0300"}).name
+        'Аналитик'
+        >>> Vacancy({"name": "Аналитик", "salary_from": 10000, "salary_to": 100000, "salary_currency": "RUR", "area_name": "Москва",  "published_at": "2022-07-05T18:19:30+0300"}).salary
+        55000.0
+        >>> Vacancy({"name": "Аналитик", "salary_from": 10000, "salary_to": 100000, "salary_currency": "RUR", "area_name": "Москва",  "published_at": "2022-07-05T18:19:30+0300"}).published_at
+        2022
+        >>> Vacancy({"name": "Аналитик", "salary_from": 10000, "salary_to": 100000, "salary_currency": "RUR", "area_name": "Москва",  "published_at": "2022-07-05T18:19:30+0300"}).area_name
+        'Москва'
+        >>> type(Vacancy({"name": "Аналитик", "salary_from": 10000, "salary_to": 100000, "salary_currency": "RUR", "area_name": "Москва",  "published_at": "2022-07-05T18:19:30+0300"})).__name__
+        'Vacancy'
         """
         self.currency_to_rub = {"AZN": 35.68,
                                 "BYR": 23.91,
@@ -302,6 +311,12 @@ class DataSet:
               Args:
                   file_name (string): название файла
                   profession (string): название профессии
+        >>> type(DataSet("vacancies_by_year.csv", "Аналитик")).__name__
+        'DataSet'
+        >>> DataSet("vacancies_by_year.csv", "Аналитик").profession
+        'Аналитик'
+        >>> DataSet("vacancies_by_year.csv", "Аналитик").file_name
+        'vacancies_by_year.csv'
         """
         self.file_name = file_name
         self.profession = profession
@@ -329,17 +344,6 @@ class DataSet:
         if rows_count == 1:
             print("Нет данных")
             exit()
-
-    def take_ten_items(self, dictionary):
-        """Принимает 10 первых пар словарей округляя значения с точностью до 4 знаков после запятой
-               Args:
-                   dictionary (dict): словарь
-               Returns:
-                   dict: форматированный словарь"""
-        result_dictionary = {}
-        for key, i in zip(dictionary, [i for i in range(10)]):
-            result_dictionary[key] = round(dictionary[key], 4)
-        return result_dictionary
 
     def csv_reader(self):
         """Создает список вакансий и генерирует списки параметров к ним
@@ -393,7 +397,7 @@ class DataSet:
         for key in self.vacancies_count_by_cities:
             if self.vacancies_count_by_cities[key] / len(self.vacancies_objects) >= 0.01:
                 dictionary[key] = self.vacancies_count_by_cities[key] / len(self.vacancies_objects)
-        return self.take_ten_items(dict(sorted(dictionary.items(), key=itemgetter(1), reverse=True)))
+        return take_ten_items(dict(sorted(dictionary.items(), key=itemgetter(1), reverse=True)))
 
     def get_salary_by_cities(self):
         """Возвращает словарь городов и уровня зарплат
@@ -409,7 +413,7 @@ class DataSet:
                     vacancy.area_name] + vacancy.salary if vacancy.area_name in dictionary else vacancy.salary)
         for key in dictionary:
             dictionary[key] = int(dictionary[key] / self.vacancies_count_by_cities[key])
-        return self.take_ten_items(dict(sorted(dictionary.items(), key=itemgetter(1), reverse=True)))
+        return take_ten_items(dict(sorted(dictionary.items(), key=itemgetter(1), reverse=True)))
 
     def count_vacancies_by_years(self):
         """Возвращает словарь годов и кол-ва вакансий
@@ -484,6 +488,22 @@ class DataSet:
                     vacancy.area_name] + 1 if vacancy.area_name in dictionary else 1)
         return dictionary
 
+
+def take_ten_items(dictionary):
+    """Принимает 10 первых пар словарей округляя значения с точностью до 4 знаков после запятой
+           Args:
+               dictionary (dict): словарь
+           Returns:
+               dict: форматированный словарь
+    >>> take_ten_items({"a": 2.79707, "b": 10.555, "c": 5, "d": 0.76534, "e": 6, "f": 7,"g": 8, "h": 9, "i": 10.44432, "j": 11, "k": 12.4433, "l": 13.3, "m": 42.094394})
+    {'a': 2.7971, 'b': 10.555, 'c': 5, 'd': 0.7653, 'e': 6, 'f': 7, 'g': 8, 'h': 9, 'i': 10.4443, 'j': 11}
+    >>> take_ten_items({'a': 2.7971, 'b': 10.555, 'c': 4.839392, 'd': 0.7653, 'e': 6})
+    {'a': 2.7971, 'b': 10.555, 'c': 4.8394, 'd': 0.7653, 'e': 6}
+    """
+    result_dictionary = {}
+    for key, i in zip(dictionary, [i for i in range(10)]):
+        result_dictionary[key] = round(dictionary[key], 4)
+    return result_dictionary
 
 def get_pdf_statistic():
     """Стартует программу"""

@@ -236,6 +236,10 @@ def number_refactoring(number):
         number (int): число
     Returns:
          string: число формата X XXX XXX
+    >>> number_refactoring("1798908")
+    '1 798 908'
+    >>> number_refactoring("52")
+    '52'
     """
     first_digit_count, triplets_count = len(number) % 3, len(number) // 3
     result_number = number[:first_digit_count]
@@ -251,6 +255,10 @@ def word_refactoring(string):
       string (string): строка
     Returns:
        string: изменённая строка
+    >>> word_refactoring("s<tag>")
+    's'
+    >>> word_refactoring("s        ")
+    's'
     """
     refactored_string = re.compile(r'<[^>]+>').sub('', string)
     refactored_string = refactored_string.replace(" ", " ").replace(" ", " ").replace("  ", " ").replace(
