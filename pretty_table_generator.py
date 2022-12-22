@@ -4,6 +4,11 @@ import prettytable
 from prettytable import PrettyTable
 
 def csv_reader(file_name):
+    """Создает список вакансий и генерирует списки параметров к ним
+    Returns:
+            list: список параметров вакансий
+            list: список вакансий
+    """
     headlines_list = []
     vacancies_list = []
     length = 0
@@ -36,6 +41,7 @@ def csv_reader(file_name):
     return headlines_list, vacancies_list
 
 def check_parametres():
+    """Валидирует входные данные"""
     naming = ["Навыки", "Оклад", "Дата публикации вакансии", "Опыт работы", "Премиум-вакансия",
                                      "Идентификатор валюты оклада", "Название", "Название региона", "Компания", ""]
     if len(filter_attribute) == 1 and filter_attribute[0] != "":
@@ -52,7 +58,14 @@ def check_parametres():
         exit()
 
 
-def csv_filer(reader, list_naming):
+def csv_filter(reader, list_naming):
+    """Создаёт словари вакансий и их параметров
+       Args:
+           reader (list): список вакансий
+           list_naming (list): список параметров вакансий
+       Returns:
+           list: лист словаей - вакансия : параметры
+       """
     dictionaries_list = []
     for vacancy in reader:
         dictionary = {}
@@ -63,6 +76,15 @@ def csv_filer(reader, list_naming):
 
 
 def cut_table(table, start_and_end, headlines, count):
+    """Обрезает таблицу
+   Args:
+       table (PrettyTable): таблица
+       start_and_end (string): строка содержащая номера первого и последнего рядов
+       headlines (string): необходимые столбцы
+       count (int): количество рядов
+   Returns:
+       table: отформатированная таблица
+    """
     start = 0
     end = count
     start_and_end = start_and_end.split(" ")
@@ -81,6 +103,12 @@ def cut_table(table, start_and_end, headlines, count):
 
 
 def formatter(row):
+    """Форматирует ряд
+       Args:
+           row (dict): словарь данных ряда
+       Returns:
+           dict: отформатированные данные в виде словаря
+    """
     result_dictionary = {}
     min_salary = ""
     max_salary = ""
@@ -102,6 +130,13 @@ def formatter(row):
 
 
 def filter_rows(dictionary, filter):
+    """Фильтрует строки
+    Args:
+        dictionary (dict): словарь
+        filter (string): аттрибут фильтрации
+    Returns:
+        bool: проходит ли фильтрация
+    """
     filter = filter.split(": ")
     naming = ["Навыки", "Оклад", "Дата публикации вакансии", "Опыт работы", "Премиум-вакансия",
               "Идентификатор валюты оклада", "Название", "Название региона", "Компания", ""]
@@ -133,6 +168,14 @@ def filter_rows(dictionary, filter):
 
 
 def sort_vacancies(data_vacancies, attribute, is_reversed):
+    """проводит сортировку
+      Args:
+          data_vacancies (list): список вакансий
+          attribute (string): аттрибут сортировки
+          is_reversed (string): нужно ли сортировать
+      Returns:
+          list: отсортированный список
+      """
     is_reversed = (True if is_reversed == "Да" else False)
     if attribute == "":
         sorted_vacancies = data_vacancies
@@ -155,6 +198,11 @@ def sort_vacancies(data_vacancies, attribute, is_reversed):
 
 
 def print_vacancies(data_vacancies, dic_naming):
+    """Печатает таблицу
+    Args:
+        data_vacancies (list) список вакансий
+        dic_naming (dict) словарь
+    """
     table = PrettyTable(hrules=prettytable.ALL, align='l')
     is_first_row = True
     number = 0
@@ -183,6 +231,12 @@ def print_vacancies(data_vacancies, dic_naming):
     print(table)
 
 def number_refactoring(number):
+    """Изменяет пормат числа с XXXXXXX на X XXX XXX
+    Args:
+        number (int): число
+    Returns:
+         string: число формата X XXX XXX
+    """
     first_digit_count, triplets_count = len(number) % 3, len(number) // 3
     result_number = number[:first_digit_count]
     for i in range(triplets_count):
@@ -192,6 +246,12 @@ def number_refactoring(number):
     return result_number
 
 def word_refactoring(string):
+    """Форматирует строку
+    Args:
+      string (string): строка
+    Returns:
+       string: изменённая строка
+    """
     refactored_string = re.compile(r'<[^>]+>').sub('', string)
     refactored_string = refactored_string.replace(" ", " ").replace(" ", " ").replace("  ", " ").replace(
         "  ", " ").strip()
@@ -241,6 +301,7 @@ dict_currencies = {"Манаты": 35.68,
                    "Узбекский сум": 0.0055, }
 
 def get_pretty_table():
+    """Стартует программу"""
     global file_name
     global filter
     global sort_property
@@ -257,5 +318,5 @@ def get_pretty_table():
     filter_attribute = filter.split(": ")
     check_parametres()
     headlines, vacancies = csv_reader(file_name)
-    dictionaries_list = csv_filer(vacancies, headlines)
+    dictionaries_list = csv_filter(vacancies, headlines)
     print_vacancies(dictionaries_list, dict_tranclator)

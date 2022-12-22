@@ -9,10 +9,34 @@ from jinja2 import Environment, FileSystemLoader
 import pdfkit
 
 
-class report:
+class Report:
+    """Класс для визуализации статистики
+        Attributes:
+           profession (string): название профессии
+           vacancies_count_by_cities (dict): Словарь - город : количество вакансий
+           vacancies_share_by_cities (dict): Словарь - город : процент вакансий от общего кол-ва
+           vacancies_count_by_years (dict): Словарь - год : количество вакансий
+           vacancies_count_by_years_for_profession (dict): Словарь - год : количество вакансий определённой профессии
+           salary_by_years (dict): Словарь - год : уровень зарплат
+           salary_by_years_for_profession (dict): Словарь - год : уровень зарплат определённой профессии
+           salary_by_cities (dict): Словарь - город : уровень зарплат
+           side (Side): стиль стороны ячейки excel
+           border (Border): стиль обводки ячейки excel
+    """
     def __init__(self, vacancies_count_by_years, vacancies_count_by_years_for_profession, salary_by_years,
                  salary_by_years_for_profession, vacancies_count_by_cities, vacancies_share_by_cities, salary_by_cities,
                  profession):
+        """Инициализируект объект Report, формирует различные данные
+        Args:
+            profession (string): название профессии
+            vacancies_count_by_cities (dict): Словарь - город : количество вакансий
+            vacancies_share_by_cities (dict): Словарь - город : процент вакансий от общего кол-ва
+            vacancies_count_by_years (dict): Словарь - год : количество вакансий
+            vacancies_count_by_years_for_profession (dict): Словарь - год : количество вакансий определённой профессии
+            salary_by_years (dict): Словарь - год : уровень зарплат
+            salary_by_years_for_profession (dict): Словарь - год : уровень зарплат определённой профессии
+            salary_by_cities (dict): Словарь - город : уровень зарплат
+        """
         self.vacancies_count_by_years = vacancies_count_by_years
         self.vacancies_count_by_years_for_profession = vacancies_count_by_years_for_profession
         self.salary_by_years = salary_by_years
@@ -25,6 +49,11 @@ class report:
         self.profession = profession
 
     def make_column_stylied(self, ws, index_column, max_row_index):
+        """Стилизует ячейки определенной колонки
+        Args:
+            index_column (int) - индекс колонки
+            max_row_index (int) - максимальный индекс  строки
+        """
         max_value = -6
         for row in range(1, max_row_index):
             cell = ws.cell(column=index_column, row=row)
@@ -34,17 +63,37 @@ class report:
         ws.column_dimensions[get_column_letter(index_column)].width = max_value + 2
 
     def fill_column_by_years(self, ws, column_index, dictionary_values, min_year, max_year):
+        """Заполняет колонку в Excel-файле со статистикой по годам
+        Args:
+            ws (openpyxl.Workbook()): Excel лист
+            column_index (int): индекс колонки
+            dictionary_values (dict):  словарь - год : значение
+            min_year (int): минимальный год для рассмотрения
+            max_year (int): максимальный год для рассмотрения
+        """
         max_row_index = max_year - min_year
         for row, value in zip([index for index in range(2, max_row_index + 2)],
                               [dictionary_values[value] for value in range(min_year, max_year)]):
             ws.cell(row=row, column=column_index, value=value)
 
     def fill_column_by_cities(self, ws, column_index, max_row_index, dictionary_values, keys):
+        """Заполняет колонку в Excel-файле со статистикой по городам
+        Args:
+            ws (openpyxl.Workbook()): Excel лист
+            column_index (int): индекс колонки
+            max_row_index (int): максимальный индекс строки
+            dictionary_values (dict):  словарь - город : значение
+            keys (list): лист городов
+        """
         for row, value in zip([index for index in range(2, max_row_index + 2)],
                               [dictionary_values[key] for key in keys]):
             ws.cell(row=row, column=column_index, value=value)
 
     def make_ws_by_years(self, ws):
+        """Создает excel-страницу со статистикой, составленной по годам
+            Args:
+                ws (openpyxl.Workbook()): Excel лист
+        """
         min_year, max_year = 2007, 2022
         max_column_index = 5
         max_row_index = max_year - min_year
@@ -64,6 +113,10 @@ class report:
             self.make_column_stylied(ws, i, max_row_index + 3)
 
     def make_ws_by_cities(self, ws):
+        """Создает excel-страницу со статистикой, составленной по городам
+        Args:
+            ws (openpyxl.Workbook()): Excel лист
+        """
         max_column_index = 5
         max_row_index = 11
         ws.title = "Статистика по городам"
@@ -81,10 +134,21 @@ class report:
             cell.number_format = '0.00%'
 
     def make_titles(self, max_column_index, names, ws):
+        """Стилизует первую строку в excel
+        Args:
+            max_column_index (int) - максимальный индекс колонки
+            names (string) - значения колонок
+            ws (openpyxl.Workbook()): Excel лист
+        """
         for cols_index, name in zip([i for i in range(1, max_column_index + 1)], names):
             ws.cell(row=1, column=cols_index, value=name).font = Font(bold=True)
 
     def generate_excel(self):
+        """генерирует excel-файл
+        Returns:
+            ws_by_cities (openpyxl.Workbook()): Excel лист со статистикой по городам
+            ws_by_years (openpyxl.Workbook()): Excel лист со статистикой по годам
+        """
         wb = Workbook()
         ws_by_years = wb.active
         ws_by_cities = wb.create_sheet()
@@ -94,6 +158,15 @@ class report:
         return ws_by_years, ws_by_cities
 
     def generate_normal_bar_graph(self, title, first_line_legend, second_line_legend, fisrt_dict, second_dict, ax):
+        """Генерирует график "обычной" гистограммы
+            Args:
+                ax (axes.SubplotBase) - форма для графика в matplotlib
+                title (string) - название графика
+                first_line_legend (string) - первая запись в легенде
+                second_line_legend (string) - вторая запись в легенде
+                first_dict (dict) - словарь для сравнительной характеристики
+                second_dict (dict) - словарь для сравнительной характеристики
+        """
         labels = [i for i in range(2007, 2023)]
         salary_by_year = [fisrt_dict[key] for key in range(2007, 2023)]
         salary_by_year_for_profession = [second_dict[key] for key in range(2007, 2023)]
@@ -107,6 +180,10 @@ class report:
         ax.yaxis.grid(True)
 
     def generate_reverse_bar_graph(self, ax):
+        """Генерирует график перевернутой гистограммы
+        Args:
+            ax (axes.SubplotBase) - форма для графика в matplotlib
+        """
         cities = self.salary_by_cities.keys()
         y_pos = np.arange(len(cities))
         performance = [self.salary_by_cities[key] for key in cities]
@@ -117,6 +194,10 @@ class report:
         ax.xaxis.grid(True)
 
     def generate_pie(self, ax):
+        """Генерирует график круговой гистограммы
+        Args:
+            ax (axes.SubplotBase) - форма для графика в matplotlib
+        """
         keys = [*self.vacancies_count_by_cities]
         top_keys, other_keys = keys[:10], keys[10:]
         x = [self.vacancies_count_by_cities[key] for key in top_keys]
@@ -126,6 +207,7 @@ class report:
         ax.set_title('Доля вакансий по городам')
 
     def generate_image(self):
+        """Генерирует картинку"""
         fig = plt.figure()
         plt.rc('xtick', labelsize=8)
         plt.rc('ytick', labelsize=8)
@@ -145,11 +227,20 @@ class report:
         plt.savefig('graph.png')
 
     def remake_to_percantage(self, ws, column_index):
+        """ Выставляет формат ячейки в проценты
+        Args:
+            ws (openpyxl.Workbook()): Excel лист
+            column_index (int): индекс колонки для редактирования
+        Returns:
+            ws (openpyxl.Workbook()): отформатированный Excel лист
+        """
         for row in range(2, ws.max_row + 1):
             ws.cell(column=column_index, row=row).value = str(round((ws.cell(column=column_index, row=row).value * 100), 2)).replace(".", ",") + "%"
         return ws
 
     def generate_pdf(self):
+        """Генерирует пдф-файл
+        """
         self.generate_image()
         year_stat, cities_stat = self.generate_excel()
         cities_stat = self.remake_to_percantage(cities_stat, 5)
@@ -162,7 +253,18 @@ class report:
 
 
 class Vacancy:
+    """Класс для вакансии
+        Attributes:
+            name (string): название
+            salary (string): зарплата
+            area_name (string): город
+            published_at (int): дата публикации
+    """
     def __init__(self, dictionary):
+        """Инициализируект объект Vacancy
+               Args:
+                   dictionary (dict): словарь
+        """
         self.currency_to_rub = {"AZN": 35.68,
                                 "BYR": 23.91,
                                 "EUR": 59.90,
@@ -181,7 +283,26 @@ class Vacancy:
 
 
 class DataSet:
+    """Составляет базу данных для вакансий.
+       Attributes:
+           file_name (string): название файла
+           profession (string): название профессии
+           vacancies_objects (list): список вакансий
+           vacancies_count_by_cities (dict): Словарь - город : количество вакансий
+           vacancies_share_by_cities (dict): Словарь - город : процент вакансий от общего кол-ва
+           vacancies_count_by_years (dict): Словарь - год : количество вакансий
+           vacancies_count_by_years_for_profession (dict): Словарь - год : количество вакансий определённой профессии
+           salary_by_years (dict): Словарь - год : уровень зарплат
+           salary_by_years_for_profession (dict): Словарь - год : уровень зарплат определённой профессии
+           salary_by_cities (dict): Словарь - город : уровень зарплат
+    """
+
     def __init__(self, file_name, profession):
+        """Инициализируект объект DataSet, создаёт словари данных о профессии
+              Args:
+                  file_name (string): название файла
+                  profession (string): название профессии
+        """
         self.file_name = file_name
         self.profession = profession
         csv_read = self.csv_reader()
@@ -190,15 +311,18 @@ class DataSet:
         for dictionary in dictionaries:
             vacancies_list.append(Vacancy(dictionary))
         self.vacancies_objects = vacancies_list
+        self.vacancies_count_by_cities = self.count_vacancies_by_cities()
+        self.vacancies_share_by_cities = self.get_vacancies_share_by_cities()
         self.vacancies_count_by_years = self.count_vacancies_by_years()
         self.vacancies_count_by_years_for_profession = self.count_profession_vacancies_by_years()
         self.salary_by_years = self.get_salary_by_years()
         self.salary_by_years_for_profession = self.get_profession_salary_by_years()
-        self.vacancies_count_by_cities = self.count_vacancies_by_cities()
-        self.vacancies_share_by_cities = self.get_vacancies_share_by_cities()
         self.salary_by_cities = self.get_salary_by_cities()
 
     def check_rows_count(self, rows_count):
+        """Принимает количество строк
+                  Args:
+                      rows_count (int): количество строк"""
         if rows_count == 0:
             print("Пустой файл")
             exit()
@@ -207,12 +331,22 @@ class DataSet:
             exit()
 
     def take_ten_items(self, dictionary):
+        """Принимает 10 первых пар словарей округляя значения с точностью до 4 знаков после запятой
+               Args:
+                   dictionary (dict): словарь
+               Returns:
+                   dict: форматированный словарь"""
         result_dictionary = {}
         for key, i in zip(dictionary, [i for i in range(10)]):
             result_dictionary[key] = round(dictionary[key], 4)
         return result_dictionary
 
     def csv_reader(self):
+        """Создает список вакансий и генерирует списки параметров к ним
+              Returns:
+                  list: список параметров вакансий
+                  list: список вакансий
+        """
         vacancies, headlines = [], []
         length, rows_count = 0, 0
         first = True
@@ -235,6 +369,13 @@ class DataSet:
         return headlines, vacancies
 
     def csv_filer(self, reader, list_naming):
+        """Генерирует словари вакансий и параметров
+        Args:
+            reader (list): список вакансий
+            list_naming (list): список параметров вакансий
+        Returns:
+            dict: словарь - вакансия : параметры
+        """
         dictionaries = []
         for vacancy in reader:
             dictionary = {}
@@ -244,6 +385,10 @@ class DataSet:
         return dictionaries
 
     def get_vacancies_share_by_cities(self):
+        """Возвращает словарь городов и процента вакансий от общего кол-ва
+            Returns:
+                dict: Словарь - город : процент вакансий от общего кол-ва
+        """
         dictionary = {}
         for key in self.vacancies_count_by_cities:
             if self.vacancies_count_by_cities[key] / len(self.vacancies_objects) >= 0.01:
@@ -251,6 +396,10 @@ class DataSet:
         return self.take_ten_items(dict(sorted(dictionary.items(), key=itemgetter(1), reverse=True)))
 
     def get_salary_by_cities(self):
+        """Возвращает словарь городов и уровня зарплат
+            Returns:
+                dict: Словарь - город : уровень зарплат
+        """
         dictionary = {}
         for vacancy in self.vacancies_objects:
             if self.vacancies_count_by_cities[vacancy.area_name] / len(self.vacancies_objects) < 0.01:
@@ -263,6 +412,10 @@ class DataSet:
         return self.take_ten_items(dict(sorted(dictionary.items(), key=itemgetter(1), reverse=True)))
 
     def count_vacancies_by_years(self):
+        """Возвращает словарь годов и кол-ва вакансий
+        Returns:
+            dict: Словарь - год : количество вакансий
+        """
         dictionary = {}
         for vacancy in self.vacancies_objects:
             dictionary[vacancy.published_at] = (
@@ -271,6 +424,10 @@ class DataSet:
         return dictionary
 
     def count_profession_vacancies_by_years(self):
+        """Возвращает словарь годов и кол-ва вакансий определённой профессии
+        Returns:
+            dict: Словарь - год : количество вакансий определённой профессии
+        """
         dictionary = {}
         for vacancy in self.vacancies_objects:
             if self.profession not in vacancy.name:
@@ -283,6 +440,10 @@ class DataSet:
         return dictionary
 
     def get_salary_by_years(self):
+        """Возвращает словарь годов и уровня зарплат
+        Returns:
+            dict: Словарь - год : уровень зарплат
+        """
         dictionary = {}
         for vacancy in self.vacancies_objects:
             dictionary[vacancy.published_at] = (
@@ -293,6 +454,10 @@ class DataSet:
         return dict(sorted(dictionary.items(), key=itemgetter(0)))
 
     def get_profession_salary_by_years(self):
+        """Возвращает словарь годов и уровня зарплат определённой профессии
+        Returns:
+            dict: Словарь - год : уровень зарплат определённой профессии
+        """
         dictionary = {}
         for vacancy in self.vacancies_objects:
             if self.profession not in vacancy.name:
@@ -308,6 +473,10 @@ class DataSet:
         return dictionary
 
     def count_vacancies_by_cities(self):
+        """Возвращает словарь годов и уровня зарплат определённой профессии
+        Returns:
+            dict: Словарь - год : уровень зарплат определённой профессии
+        """
         dictionary = {}
         for vacancy in self.vacancies_objects:
             dictionary[vacancy.area_name] = (
@@ -316,11 +485,12 @@ class DataSet:
         return dictionary
 
 
-def get_pdf_statistic(file_name, profession):
+def get_pdf_statistic():
+    """Стартует программу"""
     file_name = input("Введите название файла: ")
     profession = input("Введите название профессии: ")
     dataset = DataSet(file_name, profession)
-    report(dataset.vacancies_count_by_years, dataset.vacancies_count_by_years_for_profession, dataset.salary_by_years,
+    Report(dataset.vacancies_count_by_years, dataset.vacancies_count_by_years_for_profession, dataset.salary_by_years,
            dataset.salary_by_years_for_profession,
            dataset.vacancies_count_by_cities, dataset.vacancies_share_by_cities, dataset.salary_by_cities,
            dataset.profession).generate_pdf()
