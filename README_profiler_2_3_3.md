@@ -1,4 +1,4 @@
-![image](https://user-images.githubusercontent.com/89483642/209478530-9ffee7ce-c497-442a-ab96-c8ba1b1e3371.png)
+![image](https://user-images.githubusercontent.com/89483642/209478530-9ffee7ce-c497-442a-ab96-c8ba1b1e3371.png) 
 1 реализация: 
 ![jjdCv2oBhfI](https://user-images.githubusercontent.com/89483642/209478543-44ec73e7-4910-4aae-85f1-54cb99ca89db.jpg)
 2 реализация:
