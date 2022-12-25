@@ -2,6 +2,10 @@ import csv
 import re
 import prettytable
 from prettytable import PrettyTable
+import cProfile
+import dateparser
+import datetime as dt
+
 
 def csv_reader(file_name):
     """Создает список вакансий и генерирует списки параметров к ним
@@ -102,6 +106,32 @@ def cut_table(table, start_and_end, headlines, count):
     return table.get_string(start=start, end=end, ﬁelds=headlines)
 
 
+def date_formatter(string):
+    """
+    Приводит к правильному формату времени
+    Args:
+        string (string): неоформатированное время
+    :returns: преобразованное время
+    """
+    return string[8: 10] + "." + string[5: 7] + "." + string[: 4]
+
+
+# def date_formatter(string):
+#     date = string.split('-')
+#     return date[2][:2] + "." + date[1] + "." + date[0]
+
+
+# def date_formatter(string):
+#     date_format = '%Y-%m-%dT%H:%M:%S%z'
+#     date = dt.datetime.strptime(string, date_format)
+#     return str(date.day) + "." + str(date.month) + "." + str(date.year)
+
+
+# def date_formatter(string):
+#     date = dateparser.parse(string)
+#     return str(date.day) + "." + str(date.month) + "." + str(date.year)
+
+
 def formatter(row):
     """Форматирует ряд
        Args:
@@ -123,7 +153,7 @@ def formatter(row):
         elif key == "Идентификатор валюты оклада":
             result_dictionary["Оклад"] = f"{min_salary} - {max_salary} ({row[key]}) ({before_taxes})"
         elif key == "Дата публикации вакансии":
-            result_dictionary[key] = row[key][8: 10] + "." + row[key][5: 7] + "." + row[key][: 4]
+            result_dictionary[key] = date_formatter(row[key])
         else:
             result_dictionary[key] = row[key]
     return result_dictionary
@@ -155,7 +185,7 @@ def filter_rows(dictionary, filter):
                 if int(float(filter[1])) > int(float(dictionary[key])):
                     return False
         elif filter[0] == "Дата публикации вакансии" == key:
-            if filter[1] != dictionary[key][8: 10] + "." + dictionary[key][5: 7] + "." + dictionary[key][: 4]:
+            if filter[1] != date_formatter(dictionary[key]):
                 return False
         elif filter[0] == key == "Навыки":
             for element in filter[1].split(", "):
@@ -310,6 +340,8 @@ dict_currencies = {"Манаты": 35.68,
 
 def get_pretty_table():
     """Стартует программу"""
+    pr = cProfile.Profile()
+    pr.enable()
     global file_name
     global filter
     global sort_property
@@ -328,3 +360,5 @@ def get_pretty_table():
     headlines, vacancies = csv_reader(file_name)
     dictionaries_list = csv_filter(vacancies, headlines)
     print_vacancies(dictionaries_list, dict_tranclator)
+    pr.disable()
+    pr.print_stats()
