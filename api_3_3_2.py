@@ -56,7 +56,7 @@ class Converter:
         Формирует csv-файл с отформатированными данными
         """
         result_csv_file = pd.DataFrame(self.data)
-        result_csv_file.to_csv("vacancies_formatted.csv")
+        result_csv_file.to_csv("vacancies_formatted_3_3_2.csv")
 
 
 def run_program():

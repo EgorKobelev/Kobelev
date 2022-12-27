@@ -56,5 +56,5 @@ class CurrencyReader:
         print(result_data.head())
 
 
-# CurrencyReader("vacancies_dif_currencies.csv").read_xml()
+CurrencyReader("vacancies_dif_currencies.csv").read_xml()
 
