@@ -2,7 +2,6 @@ import pandas as pd
 import math
 from api_3_3_1 import CurrencyReader
 
-
 pd.set_option("display.max_columns", None)
 
 
@@ -15,6 +14,7 @@ class Converter:
         csv_file (DataFrame): все данные из csv-файла
         data (dict): данные для формирования итогового отформатированного csv-файла
     """
+
     def __init__(self, coefficient_file, file_name, currencies):
         """Инициализирует класс Converter
         Args:
@@ -38,7 +38,8 @@ class Converter:
             if math.isnan(salary_from) and math.isnan(salary_to) or value_curr not in self.currencies:
                 continue
             if value_curr != 'RUR':
-                coefficient = float(self.csv_currencies[self.csv_currencies["date"] == row["published_at"][:7]][value_curr].values)
+                coefficient = float(
+                    self.csv_currencies[self.csv_currencies["date"] == row["published_at"][:7]][value_curr].values)
 
             if math.isnan(salary_from):
                 self.data["salary"].append(salary_to * coefficient)
@@ -46,7 +47,7 @@ class Converter:
                 self.data["salary"].append(salary_from * coefficient)
             else:
                 self.data["salary"].append(((salary_from + salary_to) / 2) * coefficient)
-                
+
             self.data["name"].append(row["name"])
             self.data["area_name"].append(row["area_name"])
             self.data["published_at"].append(row["published_at"])
@@ -56,7 +57,7 @@ class Converter:
         Формирует csv-файл с отформатированными данными
         """
         result_csv_file = pd.DataFrame(self.data)
-        result_csv_file.to_csv("vacancies_formatted_3_3_2.csv")
+        result_csv_file.to_csv("vacancies_formatted_3_4_1.csv")
 
 
 def run_program():
@@ -66,6 +67,6 @@ def run_program():
     converter = Converter("currencies.csv", "vacancies_dif_currencies.csv", currencies)
     converter.convert()
     converter.create_csv()
-    
-    
+
+
 run_program()
