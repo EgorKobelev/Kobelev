@@ -14,26 +14,6 @@ import pdfkit
 
 
 
-currency_to_rub = {
-    "AZN": 35.68,
-    "BYR": 23.91,
-    "EUR": 59.90,
-    "GEL": 21.74,
-    "KGS": 0.76,
-    "KZT": 0.13,
-    "RUR": 1,
-    "UAH": 1.64,
-    "USD": 60.66,
-    "UZS": 0.0055,
-}
-
-
-
-def GetSalaryToRub(row):
-    if math.isnan(row['salary_mean']):
-        return 0
-    return row['salary_mean'] * currency_to_rub[row['salary_currency']]
-
 class Report:
     '''
     Класс для создания отчетов
@@ -330,6 +310,27 @@ class DataSet:
             self.salaryArea[city] = int(df_area[df_area['area_name'] == city]['salary'])
             self.salaryArea = dict(sorted(self.salaryArea.items(), key=lambda x: x[1], reverse=True))
             self.countArea[city] = round(int(df_count[df_count['area_name'] == city]['count']) / total, 4)
+
+
+currency_to_rub = {
+    "AZN": 35.68,
+    "BYR": 23.91,
+    "EUR": 59.90,
+    "GEL": 21.74,
+    "KGS": 0.76,
+    "KZT": 0.13,
+    "RUR": 1,
+    "UAH": 1.64,
+    "USD": 60.66,
+    "UZS": 0.0055,
+}
+
+
+
+def GetSalaryToRub(row):
+    if math.isnan(row['salary_mean']):
+        return 0
+    return row['salary_mean'] * currency_to_rub[row['salary_currency']]
 
 
 class InputConect:
