@@ -44,6 +44,6 @@ class CsvCutter:
                         self.info[row[-1][:4]] = [self.headers, row]
 
 
-csv_cutter = CsvCutter("vacancies_by_year.csv")
+csv_cutter = CsvCutter("vacancies_dif_currencies.csv")
 csv_cutter.read_file()
 csv_cutter.separate_csv()
